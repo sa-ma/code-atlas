@@ -1,7 +1,6 @@
 import { buildArchitectureRead } from "@/lib/server/analysis/build-architecture-read";
 import { generateArchitectureMermaid } from "@/lib/server/analysis/generate-architecture-mermaid";
 import { inventoryRepository } from "@/lib/server/analysis/inventory-repository";
-import { interpretArchitectureWithLlm } from "@/lib/server/analysis/interpret-architecture-with-llm";
 import { readArchitectureFromRepository } from "@/lib/server/analysis/read-architecture-from-repository";
 import { fetchRepositorySnapshot } from "@/lib/server/github/fetch-repository";
 import { parseGitHubUrl } from "@/lib/server/github/parse-github-url";
@@ -30,7 +29,6 @@ export async function analyzeRepository(repoUrl: string): Promise<AnalyzeReposit
   const inventory = inventoryRepository(snapshot);
   const sourceRead = readArchitectureFromRepository(snapshot, inventory);
   const architecture = buildArchitectureRead(sourceRead, inventory, snapshot);
-  const interpretation = await interpretArchitectureWithLlm(architecture);
 
   const warnings = [
     ...snapshot.warnings,
@@ -40,8 +38,8 @@ export async function analyzeRepository(repoUrl: string): Promise<AnalyzeReposit
   return {
     repo: snapshot.repo,
     architecture,
-    mermaid: interpretation?.mermaid ?? generateArchitectureMermaid(architecture),
-    summary: interpretation?.summary ?? createSummary(architecture),
+    mermaid: generateArchitectureMermaid(architecture),
+    summary: createSummary(architecture),
     warnings,
   };
 }
