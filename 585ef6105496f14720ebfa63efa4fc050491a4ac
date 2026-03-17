@@ -1,0 +1,51 @@
+package.json
+  f17cb0f2cfbdbca1 12,15,17
+src/app/layout.tsx
+  f17cb0f2cfbdbca1 2,5-6,8,11-12,14,18-19,30
+src/app/page.tsx
+  f17cb0f2cfbdbca1 1,4
+src/components/ui/alert.tsx
+  f17cb0f2cfbdbca1 1-76
+src/app/globals.css
+  f17cb0f2cfbdbca1 10-13,54,56,58-60,62,64,66-70,76-80,82-84,93,98-101,103-148
+src/components/mermaid-preview.tsx
+  f17cb0f2cfbdbca1 1-219
+src/components/analysis-status.tsx
+  f17cb0f2cfbdbca1 1-68
+src/components/code-atlas-client.tsx
+  f17cb0f2cfbdbca1 1-40,42-68
+  a2e36baaf3805b37 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "585ef6105496f14720ebfa63efa4fc050491a4ac",
+  "prompts": {
+    "a2e36baaf3805b37": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cf95b-ed46-7ff0-bcde-ede33d11c18f",
+        "model": "unknown"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    },
+    "f17cb0f2cfbdbca1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cf75c-de14-7fc0-a474-81f5084f5cdf",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 1632,
+      "total_deletions": 862,
+      "accepted_lines": 903,
+      "overriden_lines": 0
+    }
+  }
+}
