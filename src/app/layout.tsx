@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, Patrick_Hand } from "next/font/google";
+import { IBM_Plex_Sans, Libertinus_Serif, Patrick_Hand } from "next/font/google";
 import "./globals.css";
 
 const bodyFont = IBM_Plex_Sans({
@@ -12,6 +12,12 @@ const handFont = Patrick_Hand({
   variable: "--font-hand",
   subsets: ["latin"],
   weight: ["400"],
+});
+
+const logoFont = Libertinus_Serif({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${bodyFont.variable} ${handFont.variable} antialiased`}
+        className={`${bodyFont.variable} ${handFont.variable} ${logoFont.variable} antialiased`}
       >
         {children}
       </body>

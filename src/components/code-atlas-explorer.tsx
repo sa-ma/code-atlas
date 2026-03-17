@@ -46,16 +46,16 @@ function LoaderModal({ activeIndex }: { activeIndex: number }) {
 
 function ExplorerBreadcrumb({ repoLabel, repoUrl }: { repoLabel: string; repoUrl: string }) {
   return (
-    <div className="inline-flex min-w-0 flex-wrap items-center gap-2 text-sm text-black">
-      <Link href="/" className="font-hand text-xl leading-none transition-opacity hover:opacity-60">
+    <div className="inline-flex min-w-0 flex-wrap items-center gap-1 text-sm text-black">
+      <Link href="/" className="font-logo text-lg leading-none transition-opacity hover:opacity-60">
         Code Atlas
       </Link>
-      <span className="font-hand text-xl leading-none text-zinc-400">/</span>
+      <span className="font-hand text-lg leading-none text-zinc-400">/</span>
       <a
         href={repoUrl}
         target="_blank"
         rel="noreferrer"
-        className="font-hand min-w-0 max-w-full truncate text-xl leading-none transition-opacity hover:opacity-60 sm:max-w-[320px]"
+        className="font-logo min-w-0 max-w-full truncate text-lg leading-none transition-opacity hover:opacity-60 sm:max-w-[320px]"
       >
         {repoLabel}
       </a>
@@ -245,7 +245,7 @@ export function CodeAtlasExplorer({ repoUrl }: { repoUrl: string }) {
   }
 
   return (
-    <main className="min-h-screen bg-white text-black">
+    <main className="min-h-screen bg-background text-black">
       <div className="flex min-h-screen flex-col">
         <header className="flex flex-col gap-3 px-4 py-4 sm:px-6 sm:py-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

@@ -19,12 +19,12 @@ export function CodeAtlasClient() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-white px-6 py-10 text-black">
+    <main className="grid min-h-screen place-items-center bg-background px-6 py-10 text-black">
       <div className="grid w-full max-w-6xl items-center gap-14 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-20">
         <div className="mx-auto w-full max-w-2xl">
           <div className="mb-8 text-center lg:text-left">
-            <h1 className="font-hand text-5xl leading-none text-black sm:text-6xl lg:text-7xl">Code Atlas</h1>
-            <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-500 lg:text-base">
+            <h1 className="font-logo text-5xl leading-none text-black sm:text-6xl lg:text-7xl">Code Atlas</h1>
+            <p className="mt-0.5 max-w-xl text-sm leading-7 text-zinc-500 lg:text-base">
               Paste a repository and turn its architecture into a living map.
             </p>
           </div>
