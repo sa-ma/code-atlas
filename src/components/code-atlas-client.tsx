@@ -22,8 +22,8 @@ export function CodeAtlasClient() {
     <main className="relative min-h-screen overflow-hidden bg-background text-black">
       <HomepageForceGraphRegion />
 
-      <div className="relative z-20 grid min-h-screen place-items-center px-6 py-10">
-        <div className="mx-auto w-full max-w-2xl">
+      <div className="pointer-events-none relative z-20 grid min-h-screen place-items-center px-6 py-10">
+        <div className="pointer-events-auto mx-auto w-full max-w-2xl">
           <div className="mb-8 text-center lg:text-left">
             <h1 className="font-logo text-5xl leading-none text-black sm:text-6xl lg:text-7xl">Code Atlas</h1>
             <p className="mt-0.5 max-w-xl text-sm leading-7 text-zinc-500 lg:text-base">
@@ -52,14 +52,6 @@ export function CodeAtlasClient() {
               <ArrowUpRight className="size-4" />
             </button>
           </form>
-
-          <button
-            type="button"
-            onClick={() => setRepoUrl(EXAMPLE_URL)}
-            className="mt-4 text-sm text-zinc-500 transition-opacity hover:opacity-60"
-          >
-            Use example URL
-          </button>
         </div>
       </div>
     </main>

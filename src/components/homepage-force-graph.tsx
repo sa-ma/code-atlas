@@ -144,11 +144,6 @@ export function HomepageForceGraph() {
         autoPauseRedraw={false}
         minZoom={0.8}
         maxZoom={2.4}
-        enableNodeDrag={false}
-        enablePanInteraction={false}
-        enableZoomInteraction={false}
-        enablePointerInteraction={false}
-        showPointerCursor={false}
         cooldownTicks={0}
         cooldownTime={prefersReducedMotion ? 0 : 15000}
         d3AlphaDecay={0.016}
