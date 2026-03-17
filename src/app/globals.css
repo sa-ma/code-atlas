@@ -101,3 +101,17 @@
     background: color-mix(in oklab, var(--primary) 14%, white);
   }
 }
+
+@layer components {
+  .homepage-force-graph {
+    height: 100%;
+    width: 100%;
+    filter: saturate(0.9);
+  }
+
+  .homepage-force-graph canvas {
+    height: 100%;
+    width: 100%;
+    opacity: 0.56;
+  }
+}
