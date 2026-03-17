@@ -1,0 +1,27 @@
+src/app/globals.css
+  8b92be56208d29c8 12,54
+src/components/code-atlas-client.tsx
+  8b92be56208d29c8 22,26-27
+src/components/code-atlas-explorer.tsx
+  8b92be56208d29c8 49-50,53,58,248
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "76868cb00a5f296ce9ecd6263694c7638a03b493",
+  "prompts": {
+    "8b92be56208d29c8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfbbd-6c8d-70e2-8c59-6fdfd8a59978",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 13,
+      "total_deletions": 12,
+      "accepted_lines": 10,
+      "overriden_lines": 0
+    }
+  }
+}
