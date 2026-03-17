@@ -1,0 +1,23 @@
+src/components/code-atlas-explorer.tsx
+  e11e47f29739c712 47-53,55-56,58-76,79,85-114,116-123,126-155,249-257,260,263,266,272-273,275,277
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "b5de6e06e8464cb3aa36454295a69078faf0a307",
+  "prompts": {
+    "e11e47f29739c712": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cf96c-aa36-7841-b1b3-5ed2dce49099",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 222,
+      "total_deletions": 151,
+      "accepted_lines": 113,
+      "overriden_lines": 0
+    }
+  }
+}
