@@ -1,0 +1,21 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "500842f2b720ecf98bd426bb1b91c1573ca07e1e",
+  "prompts": {
+    "d25e7b65142cd8ea": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfc1e-6c1c-7622-a555-e1e6ce7e16ce",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 5,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    }
+  }
+}
