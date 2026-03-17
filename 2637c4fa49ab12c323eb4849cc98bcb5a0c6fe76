@@ -1,0 +1,44 @@
+src/components/homepage-force-graph-data.ts
+  7f4d2578b241325b 1-400
+package.json
+  7f4d2578b241325b 21
+src/app/globals.css
+  7f4d2578b241325b 104-117
+src/components/code-atlas-client.tsx
+  7f4d2578b241325b 6,22-23,25-29,33-34,39,44,46-49,51-55,57-59,61,63
+src/components/homepage-force-graph.tsx
+  7f4d2578b241325b 1-159
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "2637c4fa49ab12c323eb4849cc98bcb5a0c6fe76",
+  "prompts": {
+    "2d3b6158ff413997": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfbe0-1f54-7130-8499-558352a6fe31",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 191,
+      "total_deletions": 35,
+      "accepted_lines": 138,
+      "overriden_lines": 0
+    },
+    "7f4d2578b241325b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfbee-ae17-7123-94f2-8453e7c56e1f",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 859,
+      "total_deletions": 280,
+      "accepted_lines": 603,
+      "overriden_lines": 0
+    }
+  }
+}
