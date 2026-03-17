@@ -44,6 +44,115 @@ function LoaderModal({ activeIndex }: { activeIndex: number }) {
   );
 }
 
+function ExplorerBreadcrumb({ repoLabel, repoUrl }: { repoLabel: string; repoUrl: string }) {
+  return (
+    <div className="inline-flex min-w-0 flex-wrap items-center gap-2 text-sm text-black">
+      <Link href="/" className="font-hand text-xl leading-none transition-opacity hover:opacity-60">
+        Code Atlas
+      </Link>
+      <span className="font-hand text-xl leading-none text-zinc-400">/</span>
+      <a
+        href={repoUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="font-hand min-w-0 max-w-full truncate text-xl leading-none transition-opacity hover:opacity-60 sm:max-w-[320px]"
+      >
+        {repoLabel}
+      </a>
+    </div>
+  );
+}
+
+function ZoomControls({
+  zoom,
+  onZoomOut,
+  onZoomIn,
+}: {
+  zoom: number;
+  onZoomOut: () => void;
+  onZoomIn: () => void;
+}) {
+  return (
+    <div className="inline-flex items-center border border-black bg-white">
+      <button
+        type="button"
+        onClick={onZoomOut}
+        className="inline-flex size-9 items-center justify-center border-r border-black text-black transition-colors hover:bg-black hover:text-white"
+        aria-label="Zoom out"
+      >
+        <Minus className="size-4" />
+      </button>
+      <div className="min-w-14 px-2 text-center text-sm text-black">{Math.round(zoom * 100)}%</div>
+      <button
+        type="button"
+        onClick={onZoomIn}
+        className="inline-flex size-9 items-center justify-center border-l border-black text-black transition-colors hover:bg-black hover:text-white"
+        aria-label="Zoom in"
+      >
+        <Plus className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+function ExportActions({
+  copiedMermaid,
+  onExportPng,
+  onCopyMermaid,
+}: {
+  copiedMermaid: boolean;
+  onExportPng: () => void;
+  onCopyMermaid: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+      <button
+        type="button"
+        onClick={onExportPng}
+        className="inline-flex items-center gap-2 border border-black bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-black hover:text-white"
+      >
+        <Download className="size-4" />
+        PNG
+      </button>
+      <button
+        type="button"
+        onClick={onCopyMermaid}
+        className="inline-flex items-center gap-2 border border-black bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-black hover:text-white"
+      >
+        {copiedMermaid ? <Check className="size-4" /> : <Copy className="size-4" />}
+        {copiedMermaid ? "Copied" : "Copy Mermaid"}
+      </button>
+    </div>
+  );
+}
+
+function ExplorerActions({
+  zoom,
+  copiedMermaid,
+  onZoomOut,
+  onZoomIn,
+  onExportPng,
+  onCopyMermaid,
+}: {
+  zoom: number;
+  copiedMermaid: boolean;
+  onZoomOut: () => void;
+  onZoomIn: () => void;
+  onExportPng: () => void;
+  onCopyMermaid: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-2">
+      <ZoomControls zoom={zoom} onZoomOut={onZoomOut} onZoomIn={onZoomIn} />
+      <ExportActions
+        copiedMermaid={copiedMermaid}
+        onExportPng={onExportPng}
+        onCopyMermaid={onCopyMermaid}
+      />
+    </div>
+  );
+}
+
 export function CodeAtlasExplorer({ repoUrl }: { repoUrl: string }) {
   const [result, setResult] = useState<AnalyzeRepositoryResponse | null>(null);
   const [error, setError] = useState<string>("");
@@ -137,73 +246,35 @@ export function CodeAtlasExplorer({ repoUrl }: { repoUrl: string }) {
 
   return (
     <main className="min-h-screen bg-white text-black">
-      <div className="relative min-h-screen">
-        <div className="pointer-events-none absolute left-4 top-4 z-10 sm:left-6 sm:top-6">
-          <div className="pointer-events-auto inline-flex items-center gap-2 text-sm text-black">
-            <Link href="/" className="font-hand text-xl leading-none transition-opacity hover:opacity-60">
-              Code Atlas
-            </Link>
-            <span className="font-hand text-xl leading-none text-zinc-400">/</span>
-            <a
-              href={repoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="font-hand max-w-[320px] truncate text-xl leading-none transition-opacity hover:opacity-60"
-            >
-              {repoLabel}
-            </a>
+      <div className="flex min-h-screen flex-col">
+        <header className="flex flex-col gap-3 px-4 py-4 sm:px-6 sm:py-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <ExplorerBreadcrumb repoLabel={repoLabel} repoUrl={repoUrl} />
+            {result ? (
+              <ExplorerActions
+                zoom={zoom}
+                copiedMermaid={copiedMermaid}
+                onZoomOut={() =>
+                  setZoom((current) => Math.max(0.6, Number((current - 0.1).toFixed(2))))
+                }
+                onZoomIn={() =>
+                  setZoom((current) => Math.min(2, Number((current + 0.1).toFixed(2))))
+                }
+                onExportPng={() => {
+                  void exportMermaidToPng(exportNode || renderedSvg || result.mermaid);
+                }}
+                onCopyMermaid={() => {
+                  void navigator.clipboard.writeText(result.mermaid).then(() => {
+                    setCopiedMermaid(true);
+                    window.setTimeout(() => setCopiedMermaid(false), 1600);
+                  });
+                }}
+              />
+            ) : null}
           </div>
-        </div>
-        {result ? (
-          <div className="pointer-events-none absolute right-4 top-4 z-10 flex items-center gap-2 sm:right-6 sm:top-6">
-            <div className="pointer-events-auto inline-flex items-center border border-black bg-white">
-              <button
-                type="button"
-                onClick={() => setZoom((current) => Math.max(0.6, Number((current - 0.1).toFixed(2))))}
-                className="inline-flex size-9 items-center justify-center border-r border-black text-black transition-colors hover:bg-black hover:text-white"
-                aria-label="Zoom out"
-              >
-                <Minus className="size-4" />
-              </button>
-              <div className="min-w-14 px-2 text-center text-sm text-black">
-                {Math.round(zoom * 100)}%
-              </div>
-              <button
-                type="button"
-                onClick={() => setZoom((current) => Math.min(2, Number((current + 0.1).toFixed(2))))}
-                className="inline-flex size-9 items-center justify-center border-l border-black text-black transition-colors hover:bg-black hover:text-white"
-                aria-label="Zoom in"
-              >
-                <Plus className="size-4" />
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                void exportMermaidToPng(exportNode || renderedSvg || result.mermaid);
-              }}
-              className="pointer-events-auto inline-flex items-center gap-2 border border-black bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-black hover:text-white"
-            >
-              <Download className="size-4" />
-              PNG
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                void navigator.clipboard.writeText(result.mermaid).then(() => {
-                  setCopiedMermaid(true);
-                  window.setTimeout(() => setCopiedMermaid(false), 1600);
-                });
-              }}
-              className="pointer-events-auto inline-flex items-center gap-2 border border-black bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-black hover:text-white"
-            >
-              {copiedMermaid ? <Check className="size-4" /> : <Copy className="size-4" />}
-              {copiedMermaid ? "Copied" : "Copy Mermaid"}
-            </button>
-          </div>
-        ) : null}
+        </header>
 
-        <div className="flex min-h-screen items-center justify-center px-3 py-3 sm:px-4 sm:py-4">
+        <div className="flex flex-1 items-center justify-center px-3 py-3 sm:px-4 sm:py-4">
           {error ? (
             <div className="max-w-lg text-center">
               <p className="font-hand text-5xl leading-none">Could not generate the map</p>
