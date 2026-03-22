@@ -11,13 +11,22 @@ import {
   LoaderCircle,
   LogOut,
   Minus,
+  MoreVertical,
+  PanelRightOpen,
   Plus,
+  Trash2,
+  X,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AuthControls } from "@/components/auth-controls";
 import { MermaidPreview, exportMermaidToPng } from "@/components/mermaid-preview";
 import { useSession } from "@/components/session-provider";
 import { getApiBaseUrl } from "@/lib/api";
-import type { AnalyzeRepositoryResponse, SavedAnalysisRecord } from "@/lib/types/code-atlas";
+import type {
+  AnalyzeRepositoryResponse,
+  SavedAnalysisRecord,
+  SavedAnalysisSummary,
+} from "@/lib/types/code-atlas";
 
 const LOADER_STATES = [
   "Validating GitHub URL",
@@ -222,6 +231,217 @@ function ActionMenu({
   );
 }
 
+function SavedAnalysesDrawer({
+  currentRepoUrl,
+  currentSavedId,
+  isOpen,
+  onClose,
+  refreshKey,
+}: {
+  currentRepoUrl?: string;
+  currentSavedId?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  refreshKey: number;
+}) {
+  const router = useRouter();
+  const { user, isLoading } = useSession();
+  const [items, setItems] = useState<SavedAnalysisSummary[]>([]);
+  const [error, setError] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!user || !isOpen) {
+      setItems([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function run() {
+      try {
+        setIsFetching(true);
+        setError("");
+        const response = await fetch(`${getApiBaseUrl()}/api/analyses`, {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load saved analyses.");
+        }
+
+        const payload = (await response.json()) as SavedAnalysisSummary[];
+
+        if (!cancelled) {
+          setItems(payload);
+        }
+      } catch (requestError) {
+        if (!cancelled) {
+          setError(
+            requestError instanceof Error ? requestError.message : "Failed to load saved analyses.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsFetching(false);
+        }
+      }
+    }
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, refreshKey, user]);
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenuId(null);
+      }
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  if (isLoading || !user || !isOpen) {
+    return null;
+  }
+
+  async function handleDelete(itemId: string) {
+    try {
+      setOpenMenuId(null);
+      setDeletingId(itemId);
+      setError("");
+
+      const response = await fetch(`${getApiBaseUrl()}/api/analyses/${itemId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Saved analysis could not be deleted.");
+      }
+
+      setItems((current) => current.filter((item) => item.id !== itemId));
+
+      if (currentSavedId === itemId) {
+        if (currentRepoUrl) {
+          router.replace(`/explore?repo=${encodeURIComponent(currentRepoUrl)}`);
+        } else {
+          router.replace("/");
+        }
+      }
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Saved analysis could not be deleted.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onClose}
+        className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]"
+        aria-label="Close saved analyses"
+      />
+      <aside className="fixed right-0 top-0 z-40 flex h-screen w-full max-w-md flex-col border-l border-black bg-white p-5 shadow-[-10px_0_0_0_#111111]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-logo text-2xl leading-none text-black">Saved analyses</h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Reopen a previously generated map without recomputing it.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {isFetching ? <span className="text-sm text-zinc-500">Refreshing…</span> : null}
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex size-9 items-center justify-center border border-black text-black transition-colors hover:bg-black hover:text-white"
+              aria-label="Close saved analyses"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        </div>
+        {error ? <p className="mt-4 text-sm text-red-600">{error}</p> : null}
+        {items.length === 0 && !isFetching ? (
+          <p className="mt-4 text-sm text-zinc-500">No saved analyses yet.</p>
+        ) : null}
+        <div className="mt-4 space-y-3">
+          {items.map((item) => (
+            <div key={item.id} className="relative border border-black">
+              <Link
+                href={`/explore?saved=${encodeURIComponent(item.id)}`}
+                onClick={onClose}
+                className="block min-w-0 px-4 py-3 pr-14 transition-colors hover:bg-black hover:text-white"
+              >
+                <div className="font-medium">{item.title}</div>
+                <div className="mt-1 text-sm opacity-70">{item.summary ?? item.repoUrl}</div>
+              </Link>
+              <div
+                ref={openMenuId === item.id ? menuRef : null}
+                className="absolute right-2 top-2"
+              >
+                <button
+                  type="button"
+                  onClick={() =>
+                    setOpenMenuId((current) => (current === item.id ? null : item.id))
+                  }
+                  disabled={deletingId === item.id}
+                  className="inline-flex size-9 items-center justify-center border border-black bg-white text-black transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label={`Open actions for ${item.title}`}
+                  aria-haspopup="menu"
+                  aria-expanded={openMenuId === item.id}
+                >
+                  {deletingId === item.id ? (
+                    <LoaderCircle className="size-4 animate-spin" />
+                  ) : (
+                    <MoreVertical className="size-4" />
+                  )}
+                </button>
+                {openMenuId === item.id ? (
+                  <div className="absolute right-0 top-[calc(100%+0.5rem)] z-10 min-w-36 border border-black bg-white p-1 shadow-[6px_6px_0_0_#111111]">
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(item.id)}
+                      className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-black transition-colors hover:bg-black hover:text-white"
+                    >
+                      <span>Delete</span>
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+    </>
+  );
+}
+
 export function CodeAtlasExplorer({
   repoUrl,
   savedAnalysisId,
@@ -229,6 +449,7 @@ export function CodeAtlasExplorer({
   repoUrl: string;
   savedAnalysisId: string;
 }) {
+  const router = useRouter();
   const { user, signInWithGitHub, signOut } = useSession();
   const [result, setResult] = useState<AnalyzeRepositoryResponse | null>(null);
   const [error, setError] = useState<string>("");
@@ -240,6 +461,8 @@ export function CodeAtlasExplorer({
   const [copiedMermaid, setCopiedMermaid] = useState(false);
   const [saveLabel, setSaveLabel] = useState("Save analysis");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState(false);
+  const [savedAnalysesRefreshKey, setSavedAnalysesRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -385,7 +608,12 @@ export function CodeAtlasExplorer({
         throw new Error("Analysis could not be saved.");
       }
 
+      const saved = (await response.json()) as SavedAnalysisRecord;
+
       setSaveLabel("Saved");
+      setSavedAnalysesRefreshKey((current) => current + 1);
+      setIsSavedDrawerOpen(true);
+      router.replace(`/explore?saved=${encodeURIComponent(saved.id)}`);
       window.setTimeout(() => setSaveLabel("Save analysis"), 1600);
     } catch {
       setSaveLabel("Save failed");
@@ -418,6 +646,16 @@ export function CodeAtlasExplorer({
             <ExplorerBreadcrumb repoLabel={repoLabel} repoUrl={repoLink} />
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
               <AuthControls showIdentity={false} showSignOut={false} />
+              {user ? (
+                <button
+                  type="button"
+                  onClick={() => setIsSavedDrawerOpen(true)}
+                  className="inline-flex items-center gap-2 border border-black bg-white px-3 py-2 text-sm text-black transition-colors hover:bg-black hover:text-white"
+                >
+                  <PanelRightOpen className="size-4" />
+                  Saved
+                </button>
+              ) : null}
               {result ? (
                 <ActionMenu
                   saveLabel={user ? saveLabel : "Sign in to save"}
@@ -491,6 +729,14 @@ export function CodeAtlasExplorer({
           </div>
         ) : null}
       </div>
+
+      <SavedAnalysesDrawer
+        isOpen={isSavedDrawerOpen}
+        onClose={() => setIsSavedDrawerOpen(false)}
+        refreshKey={savedAnalysesRefreshKey}
+        currentSavedId={savedAnalysisId || undefined}
+        currentRepoUrl={result?.repo.htmlUrl}
+      />
 
       {isLoading ? <LoaderModal activeIndex={stageIndex} /> : null}
     </main>

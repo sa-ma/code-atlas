@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { HomepageForceGraphRegion } from "@/components/homepage-force-graph-region";
-import { SavedAnalysesPanel } from "@/components/saved-analyses-panel";
 
 const EXAMPLE_URL = "https://github.com/gothinkster/node-express-realworld-example-app";
 
@@ -53,7 +52,6 @@ export function CodeAtlasClient() {
               <ArrowUpRight className="size-4" />
             </button>
           </form>
-          <SavedAnalysesPanel />
         </div>
       </div>
     </main>

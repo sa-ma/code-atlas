@@ -6,6 +6,10 @@ import type {
   SavedAnalysisSummary,
 } from "@code-atlas/shared";
 
+function normalizeRepositoryKey(owner: string, repo: string) {
+  return `${owner.trim().toLowerCase()}/${repo.trim().toLowerCase()}`;
+}
+
 @Injectable()
 export class SavedAnalysesService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -13,7 +17,7 @@ export class SavedAnalysesService {
   async list(userId: string): Promise<SavedAnalysisSummary[]> {
     const analyses = await this.prisma.savedAnalysis.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
     });
 
     return analyses.map((analysis) => ({
@@ -54,10 +58,26 @@ export class SavedAnalysesService {
 
   async save(userId: string, payload: SaveAnalysisRequest): Promise<SavedAnalysisRecord> {
     const result = payload.result;
+    const repositoryKey = normalizeRepositoryKey(result.repo.owner, result.repo.repo);
 
-    const saved = await this.prisma.savedAnalysis.create({
-      data: {
+    const saved = await this.prisma.savedAnalysis.upsert({
+      where: {
+        userId_repositoryKey: {
+          userId,
+          repositoryKey,
+        },
+      },
+      create: {
         userId,
+        repoUrl: payload.repoUrl,
+        owner: result.repo.owner,
+        repo: result.repo.repo,
+        repositoryKey,
+        branch: result.repo.branch ?? null,
+        summary: result.summary ?? null,
+        result: result as unknown as Prisma.InputJsonValue,
+      },
+      update: {
         repoUrl: payload.repoUrl,
         owner: result.repo.owner,
         repo: result.repo.repo,

@@ -20,6 +20,7 @@ async function bootstrap() {
   await app.register(cors, {
     origin: env.corsAllowedOrigins,
     credentials: true,
+    methods: ["GET", "HEAD", "POST", "DELETE", "OPTIONS"],
   });
 
   app.useGlobalPipes(
