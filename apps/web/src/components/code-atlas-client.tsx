@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AuthControls } from "@/components/auth-controls";
 import { HomepageForceGraphRegion } from "@/components/homepage-force-graph-region";
 import { SavedAnalysesPanel } from "@/components/saved-analyses-panel";
 
@@ -26,9 +25,6 @@ export function CodeAtlasClient() {
 
       <div className="pointer-events-none relative z-20 grid min-h-screen place-items-center px-6 py-10">
         <div className="pointer-events-auto mx-auto w-full max-w-2xl">
-          <div className="mb-6 flex justify-end">
-            <AuthControls />
-          </div>
           <div className="mb-8 text-center lg:text-left">
             <h1 className="font-logo text-5xl leading-none text-black sm:text-6xl lg:text-7xl">Code Atlas</h1>
             <p className="mt-0.5 max-w-xl text-sm leading-7 text-zinc-500 lg:text-base">
