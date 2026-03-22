@@ -1,0 +1,43 @@
+README.md
+  978a25f482b6dd84 48,53,108
+apps/api/src/lib/server/github/fetch-repository.ts
+  978a25f482b6dd84 6,10-11,13,20,23
+packages/shared/dist/index.js
+  978a25f482b6dd84 1
+apps/api/package.json
+  978a25f482b6dd84 10,29
+apps/api/src/lib/server/github/github-client.ts
+  978a25f482b6dd84 1-270
+apps/api/src/config/env.ts
+  978a25f482b6dd84 12
+apps/api/src/main.ts
+  978a25f482b6dd84 8,11-12,41,44-48
+apps/api/tsconfig.json
+  978a25f482b6dd84 4-5
+apps/api/src/lib/server/github/github-client.test.ts
+  978a25f482b6dd84 1-149
+packages/shared/dist/index.d.ts
+  978a25f482b6dd84 1
+packages/shared/src/index.ts
+  978a25f482b6dd84 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "a88c9b9f7413b047995f94a6e1e7005365705ffa",
+  "prompts": {
+    "978a25f482b6dd84": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d1513-9b75-7353-8354-c972368f8b66",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Samaila Bala <samailabalap@gmail.com>",
+      "messages": [],
+      "total_additions": 463,
+      "total_deletions": 119,
+      "accepted_lines": 445,
+      "overriden_lines": 0
+    }
+  }
+}
