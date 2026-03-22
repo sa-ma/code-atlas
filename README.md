@@ -45,12 +45,12 @@ cp apps/web/.env.example apps/web/.env.local
   - `BACKEND_PUBLIC_URL`
   - `CORS_ALLOWED_ORIGINS`
   - `COOKIE_DOMAIN` for shared production/staging subdomains
-  - `GITHUB_TOKEN` is optional but strongly recommended
+  - `GITHUB_TOKEN` for GitHub repository analysis
 - `apps/web/.env.local`
   - `NEXT_PUBLIC_API_BASE_URL`
   - `NEXT_PUBLIC_APP_URL`
 
-4. Generate Prisma Client:
+1. Generate Prisma Client:
 
 ```bash
 pnpm --filter @code-atlas/api prisma:generate
@@ -105,6 +105,7 @@ Authenticated endpoints:
 pnpm dev
 pnpm build
 pnpm lint
+pnpm --filter @code-atlas/api test
 pnpm typecheck
 pnpm --filter @code-atlas/api auth:generate
 pnpm --filter @code-atlas/api prisma:generate

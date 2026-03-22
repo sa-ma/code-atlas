@@ -1,1 +1,1 @@
-export * from "./code-atlas";
+export * from "./code-atlas.js";

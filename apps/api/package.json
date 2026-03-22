@@ -7,6 +7,7 @@
     "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/apps/api/src/main.js",
     "lint": "eslint \"src/**/*.ts\"",
+    "test": "node --test --require ts-node/register --require tsconfig-paths/register $(find src -name '*.test.ts' -print)",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "auth:generate": "pnpm dlx @better-auth/cli@latest generate --config src/lib/auth.ts --output prisma/auth.generated.prisma",
     "prisma:generate": "prisma generate",
@@ -25,6 +26,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "fastify": "^5.6.0",
+    "octokit": "^5.0.5",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "zod": "^4.1.5"

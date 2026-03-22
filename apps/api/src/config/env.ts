@@ -9,7 +9,7 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().min(1),
   COOKIE_DOMAIN: z.string().optional(),
   DATABASE_URL: z.string().min(1),
-  GITHUB_TOKEN: z.string().optional(),
+  GITHUB_TOKEN: z.string().min(1),
   GITHUB_CLIENT_ID: z.string().min(1),
   GITHUB_CLIENT_SECRET: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(1),
