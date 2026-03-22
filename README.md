@@ -1,150 +1,112 @@
 # Code Atlas
 
-Code Atlas is a Next.js app that turns a public GitHub repository into an architecture map.
+Code Atlas is a monorepo with a Next.js frontend and a NestJS backend. It analyzes public GitHub repositories, generates an architecture map, and lets signed-in users save past analyses.
 
-Paste a GitHub repo URL into the UI, and the app will:
+## Workspace Layout
 
-- fetch a repository snapshot from the GitHub API
-- select a bounded set of relevant files
-- infer architecture signals from repo structure, manifests, routes, services, workers, and data files
-- generate a Mermaid flowchart
-- render the diagram in the browser with export and copy actions
-
-## What It Supports
-
-- Public GitHub repositories
-- Single-package apps
-- Multi-package repos
-- Monorepos with `apps/`, `packages/`, or `services/`
-- Heuristic detection for web apps, APIs, workers, data stores, and external integrations
+```text
+apps/
+  web/        # Next.js frontend
+  api/        # NestJS + Fastify backend
+packages/
+  shared/     # shared API contracts and analysis types
+```
 
 ## Stack
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Mermaid for diagram rendering
-- GitHub REST API for repository data
+- `apps/web`: Next.js 16, React 19, Tailwind CSS 4, Mermaid
+- `apps/api`: NestJS 11, Fastify, Better Auth, Prisma, Postgres
+- `packages/shared`: shared TypeScript types for frontend/backend contracts
 
 ## Local Development
 
-Install dependencies:
+1. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
-Create `.env.local` and set these variables:
+2. Copy env templates:
 
 ```bash
-GITHUB_TOKEN=your_github_token
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-Run the dev server:
+3. Fill in the required values:
+
+- `apps/api/.env`
+  - `DATABASE_URL`
+  - `BETTER_AUTH_SECRET`
+  - `BETTER_AUTH_URL` as the canonical Better Auth origin, for example `http://localhost:4000` locally and `https://api.codeatlas.gidalabs.com` in production
+  - `GITHUB_CLIENT_ID`
+  - `GITHUB_CLIENT_SECRET`
+  - `FRONTEND_PUBLIC_URL`
+  - `BACKEND_PUBLIC_URL`
+  - `CORS_ALLOWED_ORIGINS`
+  - `COOKIE_DOMAIN` for shared production/staging subdomains
+  - `GITHUB_TOKEN` is optional but strongly recommended
+- `apps/web/.env.local`
+  - `NEXT_PUBLIC_API_BASE_URL`
+  - `NEXT_PUBLIC_APP_URL`
+
+4. Generate Prisma Client:
 
 ```bash
-npm run dev
+pnpm --filter @code-atlas/api prisma:generate
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Environment Notes
-
-`GITHUB_TOKEN` is strongly recommended. Without it, GitHub API rate limits are much lower.
-
-## How Analysis Works
-
-For a submitted GitHub URL, the server:
-
-1. Parses the owner, repo, and optional branch from the URL.
-2. Fetches repository metadata and the full tree from GitHub.
-3. Selects high-signal files such as `README`, `package.json`, API routes, service files, worker files, Prisma schemas, and config files.
-4. Caps analysis to keep requests predictable:
-   - at most `120` files
-   - at most `500 KB` of selected file content
-5. Inventories the repo to classify:
-   - repo pattern: `single-package`, `multi-package`, or `monorepo`
-   - app kind: `web-app`, `backend-api`, `fullstack-app`, `worker-service`, `library-heavy`, or `monorepo`
-   - framework family: for example `Next.js`, `React`, `Express`, `Fastify`, `Prisma`
-6. Reads architectural signals from selected files.
-7. Builds an architecture model and converts it to Mermaid.
-
-## UI Flow
-
-- `/` is the landing page with the repository input
-- `/explore?repo=<github-url>` runs analysis and renders the generated map
-- users can zoom, pan, copy Mermaid, and export the diagram as PNG
-
-## API
-
-### `POST /api/analyze`
-
-Request body:
-
-```json
-{
-  "repoUrl": "https://github.com/gothinkster/node-express-realworld-example-app"
-}
-```
-
-Successful response shape:
-
-```json
-{
-  "repo": {
-    "owner": "gothinkster",
-    "repo": "node-express-realworld-example-app",
-    "branch": "main",
-    "defaultBranch": "main",
-    "htmlUrl": "https://github.com/gothinkster/node-express-realworld-example-app",
-    "description": "..."
-  },
-  "architecture": {},
-  "mermaid": "flowchart LR ...",
-  "summary": "..."
-}
-```
-
-Error cases include:
-
-- invalid or missing `repoUrl`
-- repository not found or not public
-- GitHub API rate limiting
-- upstream GitHub request failures
-
-## Project Structure
-
-```text
-src/
-  app/
-    api/analyze/route.ts        # analysis API
-    explore/page.tsx            # explorer screen
-    page.tsx                    # landing page
-  components/
-    code-atlas-client.tsx       # homepage input UX
-    code-atlas-explorer.tsx     # explorer, loader, actions
-    mermaid-preview.tsx         # Mermaid rendering + PNG export
-  lib/
-    server/
-      analysis/                 # repo inventory, architecture read, Mermaid generation
-      github/                   # GitHub URL parsing, tree fetch, file selection
-    types/code-atlas.ts         # shared analysis types
-```
-
-## Limitations
-
-- GitHub-only input
-- Public repositories only
-- Analysis is heuristic and based on selected files, not a full semantic parse
-- Very large repos may be partially analyzed because of file-count and byte-budget caps
-- The generated diagram is only as good as the conventions present in the repo
-
-## Useful Commands
+If you change the Better Auth config, regenerate the auth schema baseline first:
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
+pnpm --filter @code-atlas/api auth:generate
+pnpm --filter @code-atlas/api prisma:generate
+pnpm --filter @code-atlas/api prisma:migrate
+```
+
+5. Run both apps:
+
+```bash
+pnpm dev
+```
+
+- frontend: `http://localhost:3000`
+- backend: `http://localhost:4000`
+
+## Backend Endpoints
+
+Public endpoints:
+
+- `GET /health`
+- `POST /api/analyze`
+- Better Auth routes under `/api/auth/*`
+
+Authenticated endpoints:
+
+- `GET /api/me`
+- `GET /api/analyses`
+- `GET /api/analyses/:id`
+- `POST /api/analyses`
+- `DELETE /api/analyses/:id`
+
+## Auth Model
+
+- GitHub is the only enabled sign-in provider.
+- Better Auth runs in the NestJS backend and is hosted on the API origin, not the frontend origin.
+- `BETTER_AUTH_URL` is the source of truth for Better Auth callback generation.
+- Cookie settings come from environment-driven backend configuration.
+- When `COOKIE_DOMAIN` is set, Better Auth enables shared subdomain cookies.
+- In local development, leave `COOKIE_DOMAIN` empty to use host-only cookies.
+- The frontend redirects users to backend auth endpoints under `/api/auth/*` and then calls authenticated backend routes with browser credentials included.
+
+## Commands
+
+```bash
+pnpm dev
+pnpm build
+pnpm lint
+pnpm typecheck
+pnpm --filter @code-atlas/api auth:generate
+pnpm --filter @code-atlas/api prisma:generate
+pnpm --filter @code-atlas/api prisma:migrate
 ```

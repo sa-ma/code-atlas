@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import { IBM_Plex_Sans, Libertinus_Serif, Patrick_Hand } from "next/font/google";
+import { SessionProvider } from "@/components/session-provider";
+import "./globals.css";
+
+const bodyFont = IBM_Plex_Sans({
+  variable: "--font-plex-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const handFont = Patrick_Hand({
+  variable: "--font-hand",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const logoFont = Libertinus_Serif({
+  variable: "--font-logo",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "Code Atlas",
+  description: "Analyze public GitHub repositories and generate architecture diagrams.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${bodyFont.variable} ${handFont.variable} ${logoFont.variable} antialiased`}
+      >
+        <SessionProvider>{children}</SessionProvider>
+      </body>
+    </html>
+  );
+}
