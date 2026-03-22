@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
+  ArrowUpRight,
   Check,
   ChevronDown,
   Copy,
@@ -14,6 +15,7 @@ import {
   MoreVertical,
   PanelRightOpen,
   Plus,
+  RotateCw,
   Trash2,
   X,
 } from "lucide-react";
@@ -61,6 +63,101 @@ function LoaderModal({ activeIndex }: { activeIndex: number }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function NewRepositoryModal({
+  initialValue,
+  isOpen,
+  isPending,
+  onClose,
+  onSubmit,
+}: {
+  initialValue: string;
+  isOpen: boolean;
+  isPending: boolean;
+  onClose: () => void;
+  onSubmit: (repoUrl: string) => void;
+}) {
+  const [repoUrl, setRepoUrl] = useState(initialValue);
+
+  useEffect(() => {
+    if (isOpen) {
+      setRepoUrl(initialValue);
+    }
+  }, [initialValue, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !isPending) {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, isPending, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-white/88 px-6 backdrop-blur-[1px]">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0"
+        aria-label="Close new repository modal"
+      />
+      <div className="relative z-10 w-full max-w-2xl border border-black bg-white p-5 shadow-[10px_10px_0_0_#111111]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-logo text-3xl leading-none text-black">Generate new map</p>
+            <p className="mt-2 text-sm text-zinc-500">
+              Paste another GitHub repository URL to replace the current view.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex size-9 items-center justify-center border border-black text-black transition-colors hover:bg-black hover:text-white"
+            aria-label="Close new repository modal"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <form
+          className="mt-5 flex items-center border border-black bg-white"
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit(repoUrl.trim());
+          }}
+        >
+          <input
+            value={repoUrl}
+            onChange={(event) => setRepoUrl(event.target.value)}
+            placeholder="Paste a GitHub repo"
+            className="h-16 flex-1 border-0 bg-transparent px-5 text-base text-black outline-none placeholder:text-zinc-400"
+          />
+          <button
+            type="submit"
+            disabled={isPending || repoUrl.trim().length === 0}
+            className="flex h-16 items-center gap-2 border-l border-black px-5 text-sm text-black transition-colors hover:bg-black hover:text-white disabled:opacity-40"
+          >
+            {isPending ? "Opening…" : "Search"}
+            <ArrowUpRight className="size-4" />
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -120,7 +217,10 @@ function ZoomControls({
 function ActionMenu({
   saveLabel,
   copiedMermaid,
+  isRegenerating,
   isSaving,
+  onNew,
+  onRegenerate,
   showSignOut,
   userEmail,
   userName,
@@ -131,7 +231,10 @@ function ActionMenu({
 }: {
   saveLabel: string;
   copiedMermaid: boolean;
+  isRegenerating: boolean;
   isSaving: boolean;
+  onNew: () => void;
+  onRegenerate: () => void;
   showSignOut: boolean;
   userEmail?: string;
   userName?: string | null;
@@ -190,6 +293,23 @@ function ActionMenu({
               <div className="mt-1 text-xs text-zinc-500">{userEmail}</div>
             </div>
           ) : null}
+          <button
+            type="button"
+            onClick={() => runAction(onNew)}
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-black transition-colors hover:bg-black hover:text-white"
+          >
+            <span>New</span>
+            <ArrowUpRight className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => runAction(onRegenerate)}
+            disabled={isRegenerating}
+            className="flex w-full items-center justify-between gap-3 border-b border-zinc-200 px-3 py-2 text-left text-sm text-black transition-colors hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span>{isRegenerating ? "Regenerating…" : "Regenerate"}</span>
+            {isRegenerating ? <LoaderCircle className="size-4 animate-spin" /> : <RotateCw className="size-4" />}
+          </button>
           <button
             type="button"
             onClick={() => runAction(onSave)}
@@ -463,62 +583,13 @@ export function CodeAtlasExplorer({
   const [isSaving, setIsSaving] = useState(false);
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState(false);
   const [savedAnalysesRefreshKey, setSavedAnalysesRefreshKey] = useState(0);
+  const [isNewModalOpen, setIsNewModalOpen] = useState(false);
+  const [isOpeningNewRepo, setIsOpeningNewRepo] = useState(false);
+  const [analysisRunId, setAnalysisRunId] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     let ticker = 0;
-
-    async function analyzeCurrentRepo() {
-      try {
-        setError("");
-        setIsLoading(true);
-        setStageIndex(0);
-
-        ticker = window.setInterval(() => {
-          setStageIndex((current) => Math.min(current + 1, LOADER_STATES.length - 1));
-        }, 1000);
-
-        const response = await fetch(`${getApiBaseUrl()}/api/analyze`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ repoUrl }),
-        });
-
-        const payload = (await response.json()) as
-          | AnalyzeRepositoryResponse
-          | { error?: string };
-
-        window.clearInterval(ticker);
-
-        if (!response.ok) {
-          throw new Error(
-            "error" in payload ? payload.error ?? "Repository analysis failed." : "Repository analysis failed.",
-          );
-        }
-
-        if ("error" in payload) {
-          throw new Error(payload.error ?? "Repository analysis failed.");
-        }
-
-        if (!cancelled) {
-          setStageIndex(LOADER_STATES.length - 1);
-          setResult(payload as AnalyzeRepositoryResponse);
-          setRenderedSvg("");
-          setZoom(1);
-          setCopiedMermaid(false);
-          setIsLoading(false);
-        }
-      } catch (requestError) {
-        if (!cancelled) {
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : "Repository analysis failed.",
-          );
-          setIsLoading(false);
-        }
-      }
-    }
 
     async function loadSavedAnalysis() {
       try {
@@ -568,7 +639,57 @@ export function CodeAtlasExplorer({
       return () => undefined;
     }
 
-    void analyzeCurrentRepo();
+    void (async () => {
+      try {
+        setError("");
+        setIsLoading(true);
+        setStageIndex(0);
+
+        ticker = window.setInterval(() => {
+          setStageIndex((current) => Math.min(current + 1, LOADER_STATES.length - 1));
+        }, 1000);
+
+        const response = await fetch(`${getApiBaseUrl()}/api/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repoUrl }),
+        });
+
+        const payload = (await response.json()) as
+          | AnalyzeRepositoryResponse
+          | { error?: string };
+
+        window.clearInterval(ticker);
+
+        if (!response.ok) {
+          throw new Error(
+            "error" in payload
+              ? payload.error ?? "Repository analysis failed."
+              : "Repository analysis failed.",
+          );
+        }
+
+        if ("error" in payload) {
+          throw new Error(payload.error ?? "Repository analysis failed.");
+        }
+
+        if (!cancelled) {
+          setStageIndex(LOADER_STATES.length - 1);
+          setResult(payload as AnalyzeRepositoryResponse);
+          setRenderedSvg("");
+          setZoom(1);
+          setCopiedMermaid(false);
+          setIsLoading(false);
+        }
+      } catch (requestError) {
+        if (!cancelled) {
+          setError(
+            requestError instanceof Error ? requestError.message : "Repository analysis failed.",
+          );
+          setIsLoading(false);
+        }
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -576,6 +697,10 @@ export function CodeAtlasExplorer({
         window.clearInterval(ticker);
       }
     };
+  }, [repoUrl, savedAnalysisId, analysisRunId]);
+
+  useEffect(() => {
+    setIsOpeningNewRepo(false);
   }, [repoUrl, savedAnalysisId]);
 
   async function handleSave() {
@@ -623,6 +748,34 @@ export function CodeAtlasExplorer({
     }
   }
 
+  function handleOpenNewRepository(nextRepoUrl: string) {
+    if (nextRepoUrl.trim().length === 0) {
+      return;
+    }
+
+    setIsOpeningNewRepo(true);
+    setIsNewModalOpen(false);
+    router.push(`/explore?repo=${encodeURIComponent(nextRepoUrl.trim())}`);
+  }
+
+  function handleRegenerate() {
+    if (!result) {
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+    setStageIndex(0);
+    setIsSavedDrawerOpen(false);
+
+    if (savedAnalysisId.trim().length > 0) {
+      router.replace(`/explore?repo=${encodeURIComponent(result.repo.htmlUrl)}`);
+      return;
+    }
+
+    setAnalysisRunId((current) => current + 1);
+  }
+
   let repoLabel = result ? `${result.repo.owner}/${result.repo.repo}` : repoUrl;
   let repoLink = result?.repo.htmlUrl ?? repoUrl;
 
@@ -660,7 +813,10 @@ export function CodeAtlasExplorer({
                 <ActionMenu
                   saveLabel={user ? saveLabel : "Sign in to save"}
                   copiedMermaid={copiedMermaid}
+                  isRegenerating={isLoading}
                   isSaving={isSaving}
+                  onNew={() => setIsNewModalOpen(true)}
+                  onRegenerate={handleRegenerate}
                   showSignOut={Boolean(user)}
                   userEmail={user?.email}
                   userName={user?.name}
@@ -736,6 +892,14 @@ export function CodeAtlasExplorer({
         refreshKey={savedAnalysesRefreshKey}
         currentSavedId={savedAnalysisId || undefined}
         currentRepoUrl={result?.repo.htmlUrl}
+      />
+
+      <NewRepositoryModal
+        initialValue=""
+        isOpen={isNewModalOpen}
+        isPending={isOpeningNewRepo}
+        onClose={() => setIsNewModalOpen(false)}
+        onSubmit={handleOpenNewRepository}
       />
 
       {isLoading ? <LoaderModal activeIndex={stageIndex} /> : null}

@@ -8,12 +8,12 @@ import type {
 
 const ROUTE_FILE_PATTERN =
   /(routes?|controllers?|route|controller)\.(ts|tsx|js|jsx)$|\/(routes?|controllers?)\//i;
-const SERVICE_FILE_PATTERN = /(services?|use-cases?|usecases?)\//i;
+const SERVICE_FILE_PATTERN = /(services?|use-cases?|usecases?)\/|\.(service|use-case|usecase)\.(ts|tsx|js|jsx)$/i;
 const AUTH_FILE_PATTERN = /(auth|jwt|token|session|passport)/i;
 const MIDDLEWARE_FILE_PATTERN = /(middleware|guard|interceptor)/i;
 const ERROR_FILE_PATTERN = /(error-handler|exception|errors?)/i;
 const STATIC_PATTERN = /(^public\/)|(^assets\/)|(^src\/assets\/)/i;
-const ENTITY_PATTERN = /(models?|entities?|schemas?)\//i;
+const ENTITY_PATTERN = /(models?|entities?|schemas?)\/|\.(entity|model|schema)\.(ts|tsx|js|jsx)$/i;
 const ENTRYPOINT_PATTERN =
   /(^|\/)(main|index|server|app)\.(ts|tsx|js|jsx)$/i;
 
@@ -52,8 +52,11 @@ function getBasename(path: string): string {
 
 function normalizeName(raw: string): string {
   return raw
-    .replace(/\.(controller|controllers|route|routes|service|services|middleware|handler|ts|tsx|js|jsx)$/i, "")
-    .replace(/\.(ts|tsx|js|jsx)$/i, "");
+    .replace(/\.(ts|tsx|js|jsx)$/i, "")
+    .replace(
+      /\.(controller|controllers|route|routes|service|services|middleware|handler|guard|interceptor|entity|model|schema|module|decorator)$/i,
+      "",
+    );
 }
 
 function uniqueStrings(values: string[]): string[] {
